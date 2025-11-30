@@ -1,0 +1,27 @@
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="vortex-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00E5FF" />
+      <stop offset="100%" stop-color="#2979FF" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="48" fill="#0B1120"/>
+  
+  <!-- Main Outer Arc (Vortex spiral) -->
+  <path d="M50 10 A40 40 0 0 1 90 50 A40 40 0 0 1 50 90 A40 40 0 0 1 10 50" 
+        stroke="url(#vortex-grad)" stroke-width="5" stroke-linecap="round" fill="none"/>
+
+  <!-- Secondary Inner Arc -->
+  <path d="M50 80 A30 30 0 0 1 20 50 A30 30 0 0 1 50 20" 
+        stroke="#00E5FF" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.7"/>
+  
+  <!-- Central Core -->
+  <circle cx="50" cy="50" r="12" fill="url(#vortex-grad)" opacity="0.3"/>
+  <circle cx="50" cy="50" r="7" fill="#00E5FF"/>
+  
+  <!-- Orbiting Particle -->
+  <circle cx="50" cy="12" r="5" fill="#fff"/>
+</svg>
+
