@@ -174,33 +174,15 @@ const DashboardPage = () => {
     return (
       <div className="min-h-[80vh] flex flex-col items-center justify-center">
         <div className="relative">
-          {/* Animated logo/spinner */}
-          <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary/20 to-purple-500/20 border border-white/10 flex items-center justify-center">
-            <ShieldCheckIcon className="w-12 h-12 text-primary animate-pulse" />
+          {/* Animated logo */}
+          <div className="w-32 h-32 flex items-center justify-center relative">
+            <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
+            <img 
+              src="/logo.svg" 
+              alt="Loading..." 
+              className="w-24 h-24 relative z-10 animate-pulse" 
+            />
           </div>
-          {/* Spinning ring */}
-          <div className="absolute inset-0 w-24 h-24">
-            <svg className="w-full h-full animate-spin" style={{ animationDuration: '2s' }} viewBox="0 0 100 100">
-              <circle
-                cx="50"
-                cy="50"
-                r="45"
-                fill="none"
-                stroke="url(#gradient)"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeDasharray="70 200"
-              />
-              <defs>
-                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#00E5FF" />
-                  <stop offset="100%" stopColor="#8B5CF6" />
-                </linearGradient>
-              </defs>
-            </svg>
-          </div>
-          {/* Outer glow */}
-          <div className="absolute -inset-4 bg-primary/10 rounded-3xl blur-xl animate-pulse"></div>
         </div>
         <div className="mt-10 text-center">
           <h2 className="text-2xl font-bold text-white mb-3 tracking-tight">
