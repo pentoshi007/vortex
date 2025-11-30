@@ -60,25 +60,28 @@ userSchema.pre('save', async function (next) {
     next();
 });
 
-// Static method to create default admin (uses environment variable for security)
+// Static method to create or update default admin (uses environment variable for security)
 userSchema.statics.createDefaultAdmin = async function () {
-    const count = await this.countDocuments();
-    if (count === 0) {
-        // Get admin credentials from environment variables
-        const adminUsername = process.env.DEFAULT_ADMIN_USERNAME || 'admin';
-        const adminEmail = process.env.DEFAULT_ADMIN_EMAIL || 'admin@cti-dashboard.local';
-        const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD;
-        
-        // Only create default admin if password is set in environment
-        if (!adminPassword) {
-            console.log('No DEFAULT_ADMIN_PASSWORD set - skipping default admin creation');
-            console.log('Set DEFAULT_ADMIN_PASSWORD environment variable to create initial admin user');
-            return;
-        }
-        
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(adminPassword, salt);
+    // Get admin credentials from environment variables
+    const adminUsername = process.env.DEFAULT_ADMIN_USERNAME || 'admin';
+    const adminEmail = process.env.DEFAULT_ADMIN_EMAIL || 'admin@cti-dashboard.local';
+    const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD;
+    
+    // Only proceed if password is set in environment
+    if (!adminPassword) {
+        console.log('No DEFAULT_ADMIN_PASSWORD set - skipping default admin creation/update');
+        console.log('Set DEFAULT_ADMIN_PASSWORD environment variable to create initial admin user');
+        return;
+    }
+    
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(adminPassword, salt);
 
+    // Check if any admin exists
+    const existingAdmin = await this.findOne({ role: 'admin' });
+    
+    if (!existingAdmin) {
+        // No admin exists, create one
         await this.create({
             username: adminUsername,
             email: adminEmail,
@@ -86,6 +89,21 @@ userSchema.statics.createDefaultAdmin = async function () {
             password_hash: hashedPassword,
         });
         console.log(`Default admin user created: ${adminUsername}`);
+    } else {
+        // Admin exists - check if we should update based on env var username match
+        // Only update if the existing admin username matches the env var OR if FORCE_ADMIN_UPDATE is set
+        const forceUpdate = process.env.FORCE_ADMIN_UPDATE === 'true';
+        
+        if (forceUpdate || existingAdmin.username === adminUsername) {
+            // Update the existing admin's password
+            existingAdmin.password_hash = hashedPassword;
+            existingAdmin.username = adminUsername;
+            existingAdmin.email = adminEmail;
+            await existingAdmin.save();
+            console.log(`Admin user updated: ${adminUsername}`);
+        } else {
+            console.log(`Admin user already exists (${existingAdmin.username}). Set FORCE_ADMIN_UPDATE=true to override.`);
+        }
     }
 };
 
