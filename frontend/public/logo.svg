@@ -1,0 +1,37 @@
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="neon-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00E5FF" />
+      <stop offset="100%" stop-color="#2979FF" />
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Main Outer Arc -->
+  <path d="M50 10 A40 40 0 0 1 90 50 A40 40 0 0 1 50 90 A40 40 0 0 1 10 50" 
+        stroke="url(#neon-grad)" stroke-width="4" stroke-linecap="round" filter="url(#glow)">
+        <animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="10s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- Secondary Inner Arc -->
+  <path d="M50 80 A30 30 0 0 1 20 50 A30 30 0 0 1 50 20" 
+        stroke="#00E5FF" stroke-width="2" stroke-linecap="round" opacity="0.6">
+        <animateTransform attributeName="transform" type="rotate" from="360 50 50" to="0 50 50" dur="7s" repeatCount="indefinite"/>
+  </path>
+  
+  <!-- Central Core -->
+  <circle cx="50" cy="50" r="12" fill="url(#neon-grad)" opacity="0.2">
+     <animate attributeName="r" values="10;14;10" dur="3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="50" cy="50" r="6" fill="#fff" filter="url(#glow)">
+     <animate attributeName="opacity" values="0.8;1;0.8" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Orbiting Particle -->
+  <circle cx="50" cy="10" r="4" fill="#fff" filter="url(#glow)">
+    <animateTransform attributeName="transform" type="rotate" from="0 50 50" to="360 50 50" dur="10s" repeatCount="indefinite"/>
+  </circle>
+</svg>
