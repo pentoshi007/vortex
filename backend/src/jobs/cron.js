@@ -2,11 +2,13 @@ const cron = require('node-cron');
 const logger = require('../config/logger');
 const ingestionService = require('../services/ingestion.service');
 const lookupService = require('../services/lookup.service');
+const iocsService = require('../services/iocs.service');
 const rateLimiter = require('../utils/rateLimiter');
 
 // Track if jobs are running to prevent overlap
 let isIngestionRunning = false;
 let isEnrichmentRunning = false;
+let isCleanupRunning = false;
 
 const initCronJobs = () => {
     // URLHaus Ingestion - Every 2 hours (reduced frequency for stability)
@@ -59,13 +61,34 @@ const initCronJobs = () => {
         }
     });
 
+    // Cleanup old IOCs - Daily at 3:00 AM
+    // Deletes IOCs that haven't been seen in 30 days
+    cron.schedule('0 3 * * *', async () => {
+        if (isCleanupRunning) {
+            logger.warn('Skipping scheduled cleanup - previous run still in progress');
+            return;
+        }
+        
+        isCleanupRunning = true;
+        logger.info('Running scheduled task: Cleanup old IOCs (older than 30 days)');
+        
+        try {
+            const result = await iocsService.deleteOldIocs(30);
+            logger.info(`Scheduled cleanup completed: ${result.deleted_count} IOCs deleted (cutoff: ${result.cutoff_date.toISOString()})`);
+        } catch (error) {
+            logger.error(`Scheduled cleanup failed: ${error.message}`);
+        } finally {
+            isCleanupRunning = false;
+        }
+    });
+
     // Log rate limit status every 6 hours for monitoring
     cron.schedule('0 */6 * * *', () => {
         const status = rateLimiter.getRateLimitStatus();
         logger.info(`Rate limit status - VT: ${status.virustotal.dailyRemaining}/${status.virustotal.dailyRemaining + rateLimiter.getRateLimitStatus().virustotal.dailyRemaining} daily, AbuseIPDB: ${status.abuseipdb.dailyRemaining} daily`);
     });
 
-    logger.info('Cron jobs initialized (2-hour interval for free tier compatibility)');
+    logger.info('Cron jobs initialized (2-hour interval for free tier compatibility, daily cleanup at 3 AM)');
 };
 
 module.exports = initCronJobs;

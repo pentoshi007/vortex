@@ -163,6 +163,46 @@ const bulkTag = async (iocIds, tagNames, user) => {
     };
 };
 
+/**
+ * Delete IOCs older than specified days based on last_seen date
+ * @param {number} days - Number of days (default: 30)
+ * @returns {Object} - Result with count of deleted IOCs
+ */
+const deleteOldIocs = async (days = 30) => {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+    
+    const result = await Indicator.deleteMany({
+        last_seen: { $lt: cutoffDate }
+    });
+    
+    return {
+        deleted_count: result.deletedCount,
+        cutoff_date: cutoffDate,
+        days: days,
+    };
+};
+
+/**
+ * Get count of IOCs that would be deleted by cleanup
+ * @param {number} days - Number of days (default: 30)
+ * @returns {Object} - Count of IOCs that would be affected
+ */
+const getOldIocsCount = async (days = 30) => {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+    
+    const count = await Indicator.countDocuments({
+        last_seen: { $lt: cutoffDate }
+    });
+    
+    return {
+        count,
+        cutoff_date: cutoffDate,
+        days: days,
+    };
+};
+
 module.exports = {
     createIoc,
     queryIocs,
@@ -172,4 +212,6 @@ module.exports = {
     addTag,
     removeTag,
     bulkTag,
+    deleteOldIocs,
+    getOldIocsCount,
 };
