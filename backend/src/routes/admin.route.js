@@ -14,6 +14,8 @@ router.get('/all-runs', adminAuth, adminController.getAllRuns);
 router.post('/ingest/run', adminAuth, adminController.triggerIngest);
 router.post('/enrichment/run', adminAuth, adminController.triggerEnrichment);
 router.get('/auto-run/check', adminAuth, adminController.checkAutoRun);
+router.get('/cleanup/preview', adminAuth, adminController.getCleanupPreview);
+router.post('/cleanup/run', adminAuth, adminController.triggerCleanup);
 
 router
     .route('/users')

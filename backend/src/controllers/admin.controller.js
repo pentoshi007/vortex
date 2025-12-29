@@ -2,6 +2,7 @@ const httpStatus = require('http-status').default;
 const catchAsync = require('../utils/catchAsync');
 const adminService = require('../services/admin.service');
 const metricsService = require('../services/metrics.service');
+const iocsService = require('../services/iocs.service');
 
 const getSystemStats = catchAsync(async (req, res) => {
     // We reuse metrics service for system stats as it has similar logic
@@ -106,6 +107,34 @@ const deleteUser = catchAsync(async (req, res) => {
     res.send({ message: 'User deleted successfully' });
 });
 
+const getCleanupPreview = catchAsync(async (req, res) => {
+    const days = parseInt(req.query.days) || 30;
+    const result = await iocsService.getOldIocsCount(days);
+    res.send({
+        message: `Found ${result.count} IOCs older than ${days} days`,
+        ...result,
+    });
+});
+
+const triggerCleanup = catchAsync(async (req, res) => {
+    const days = parseInt(req.body.days) || 30;
+    
+    // Safety check: don't allow deleting very recent IOCs
+    if (days < 7) {
+        return res.status(400).send({
+            message: 'Cannot cleanup IOCs less than 7 days old for safety',
+            error: 'Minimum retention period is 7 days',
+        });
+    }
+    
+    const result = await iocsService.deleteOldIocs(days);
+    res.send({
+        message: `Successfully deleted ${result.deleted_count} IOCs older than ${days} days`,
+        ...result,
+        status: 'completed',
+    });
+});
+
 module.exports = {
     getSystemStats,
     getIngestRuns,
@@ -118,4 +147,6 @@ module.exports = {
     createUser,
     updateUser,
     deleteUser,
+    getCleanupPreview,
+    triggerCleanup,
 };
