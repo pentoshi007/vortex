@@ -4,7 +4,7 @@ const exportSchema = mongoose.Schema(
     {
         format: {
             type: String,
-            enum: ['csv'],
+            enum: ['csv', 'json', 'stix'],
             required: true,
         },
         query: {

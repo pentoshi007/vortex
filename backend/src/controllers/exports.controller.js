@@ -4,7 +4,12 @@ const exportsService = require('../services/exports.service');
 
 const createExport = catchAsync(async (req, res) => {
     const result = await exportsService.createExport(req.body, req.user);
-    res.status(httpStatus.CREATED).send(result);
+    
+    // Return file directly for download
+    res.setHeader('Content-Type', result.contentType);
+    res.setHeader('Content-Disposition', `attachment; filename="${result.filename}"`);
+    res.setHeader('X-Record-Count', result.record_count);
+    res.send(result.data);
 });
 
 const listExports = catchAsync(async (req, res) => {
@@ -44,8 +49,22 @@ const downloadExport = catchAsync(async (req, res) => {
 
     const file = await exportsService.getExportFile(req.params.exportId);
 
-    res.setHeader('Content-Type', file.format === 'json' ? 'application/json' : 'text/csv');
-    res.setHeader('Content-Disposition', `attachment; filename=${file.filename}`);
+    // Set content type based on format
+    let contentType;
+    switch (file.format) {
+        case 'json':
+        case 'stix':
+            contentType = 'application/json';
+            break;
+        case 'csv':
+            contentType = 'text/csv';
+            break;
+        default:
+            contentType = 'application/octet-stream';
+    }
+
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', `attachment; filename="${file.filename}"`);
     res.send(file.data);
 });
 
